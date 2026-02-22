@@ -1,0 +1,101 @@
+.dashboard-container {
+  padding: 20px;
+  background: #0b1e2d;
+  min-height: 100vh;
+  color: white;
+}
+
+.dashboard-title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.top-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.soar-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: #132c44;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.center-card {
+  text-align: center;
+}
+
+.big-score {
+  font-size: 40px;
+  font-weight: bold;
+  color: #00e6e6;
+}
+
+.circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.green {
+  background: linear-gradient(145deg, #00c853, #64dd17);
+}
+
+.red {
+  background: linear-gradient(145deg, #d50000, #ff1744);
+}
+
+.log-list {
+  list-style: none;
+  padding: 0;
+}
+
+.log-list li {
+  margin-bottom: 10px;
+}
+
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.heatmap div {
+  height: 40px;
+  background: linear-gradient(145deg, #00e6e6, #005f73);
+  border-radius: 5px;
+}
+
+.network-visual {
+  height: 150px;
+  background: linear-gradient(to right, #0f3057, #00587a);
+  border-radius: 8px;
+}
+
+.pillar-title {
+  text-align: center;
+  margin: 20px 0;
+}
