@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #faf6f0; --warm: #f2ebe0; --border: #ddd3c4;
+      --ink: #2c2620; --muted: #8c7d70; --faint: #bdb0a4;
+      --rust: #b85c38; --sage: #6b8c6e;
+    }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream); color: var(--ink);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 10% 100%, #eddfc8 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 90% 0%,   #f0e6d8 0%, transparent 45%);
+    }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(250,246,240,0.8);
+      backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .h-left { display: flex; align-items: center; gap: 10px; }
+    .h-icon {
+      width: 30px; height: 30px; border: 1.5px solid var(--ink);
+      display: grid; place-items: center; position: relative;
+    }
+    .h-icon::after { content:''; position:absolute; bottom:-3px; right:-3px; width:10px; height:10px; background:var(--rust); }
+    .h-icon svg { position: relative; z-index: 1; }
+    .h-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .h-right { display: flex; align-items: center; gap: 20px; }
+    .role-badge {
+      padding: 4px 14px;
+      font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+      border: 1px solid var(--border);
+    }
+    .role-badge.admin    { border-color:#b57aff55; color:#9b59b6; background:#f9f4ff; }
+    .role-badge.employee { border-color:#b85c3855; color:var(--rust); background:#fff8f5; }
+    .role-badge.intern   { border-color:#6b8c6e55; color:var(--sage); background:#f4f9f4; }
+    .logout-btn {
+      font-family: 'Jost', sans-serif; font-size: 0.75rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 16px; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--rust); color: var(--rust); }
+
+    main {
+      max-width: 860px; margin: 0 auto;
+      padding: 64px 48px;
+      animation: rise 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes rise { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .greeting-label {
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--rust); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .greeting-label::after { content:''; flex:0 0 28px; height:1px; background:var(--rust); }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 4vw, 3.6rem);
+      font-weight: 300; line-height: 1.1;
+      letter-spacing: -0.01em; margin-bottom: 8px;
+    }
+    h1 em { font-style: italic; color: var(--rust); }
+
+    .dept {
+      font-size: 0.85rem; color: var(--muted); margin-bottom: 48px;
+    }
+
+    /* Info cards */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+    .info-card {
+      padding: 24px 28px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid var(--border);
+    }
+    .ic-label { font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+    .ic-value { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; color: var(--ink); }
+
+    .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+    .access-note {
+      font-size: 0.8rem; color: var(--muted); line-height: 1.7;
+      padding: 18px 22px;
+      border-left: 3px solid var(--border);
+      background: rgba(255,255,255,0.4);
+    }
+    .access-note strong { color: var(--ink); font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="h-left">
+      <div class="h-icon">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2L14 6V10L8 14L2 10V6L8 2Z" stroke="#2c2620" stroke-width="1.2"/>
+          <circle cx="8" cy="8" r="2" fill="#b85c38"/>
+        </svg>
+      </div>
+      <span class="h-name">Portal</span>
+    </div>
+    <div class="h-right">
+      <span class="role-badge" id="roleBadge">—</span>
+      <button class="logout-btn" id="logoutBtn">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <p class="greeting-label">Dashboard</p>
+    <h1 id="greeting">Welcome, <em id="nameDisplay">—</em></h1>
+    <p class="dept" id="deptDisplay">Loading your profile…</p>
+
+    <div class="cards">
+      <div class="info-card">
+        <p class="ic-label">Role</p>
+        <p class="ic-value" id="roleDisplay">—</p>
+      </div>
+      <div class="info-card">
+        <p class="ic-label">Department</p>
+        <p class="ic-value" id="deptCard">—</p>
+      </div>
+      <div class="info-card">
+        <p class="ic-label">Access Level</p>
+        <p class="ic-value" id="accessLevel">—</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="access-note" id="accessNote">
+      Loading access information…
+    </div>
+  </main>
+
+  <script>
+    const accessMap = {
+      admin:    { level: 'Full Access',    note: 'As an <strong>Administrator</strong>, you have full access to all systems, user management, and configuration settings.' },
+      employee: { level: 'Standard',       note: 'As an <strong>Employee</strong>, you have access to your department tools, project resources, and internal communication.' },
+      intern:   { level: 'Limited',        note: 'As an <strong>Intern</strong>, you have read access to shared resources and limited access to your assigned department tools.' }
+    };
+
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.loggedIn) return window.location.href = '/';
+
+        document.getElementById('nameDisplay').textContent  = data.name || data.username;
+        document.getElementById('deptDisplay').textContent  = data.department ? `${data.department} Department` : 'No department assigned';
+        document.getElementById('roleDisplay').textContent  = capitalize(data.role);
+        document.getElementById('deptCard').textContent     = data.department || '—';
+
+        const badge = document.getElementById('roleBadge');
+        badge.textContent = capitalize(data.role);
+        badge.className   = `role-badge ${data.role}`;
+
+        const info = accessMap[data.role] || accessMap.employee;
+        document.getElementById('accessLevel').textContent = info.level;
+        document.getElementById('accessNote').innerHTML    = info.note;
+      });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/';
+    });
+
+    function capitalize(s) {
+      return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
+    }
+  </script>
+
+</body>
+</html>

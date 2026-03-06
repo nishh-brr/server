@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #faf6f0;
+      --warm:    #f2ebe0;
+      --sand:    #e8ddd0;
+      --border:  #ddd3c4;
+      --border2: #c9bfb0;
+      --ink:     #2c2620;
+      --ink2:    #4a3f36;
+      --muted:   #8c7d70;
+      --faint:   #bdb0a4;
+      --rust:    #b85c38;
+      --rust2:   #9e4e2e;
+      --sage:    #6b8c6e;
+      --danger:  #c0392b;
+    }
+
+    html, body { height: 100%; font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); overflow: hidden; }
+
+    /* ── BACKGROUND ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 90% 70% at 15% 100%, #eddfc8 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 90% 0%,   #f0e6d8 0%, transparent 50%),
+        radial-gradient(ellipse 40% 40% at 60% 60%,  #f5ede2 0%, transparent 45%),
+        var(--cream);
+    }
+
+    /* Subtle organic texture */
+    .bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-size: 300px 300px;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100vh;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left {
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 56px 64px;
+      border-right: 1px solid var(--border);
+    }
+
+    .wordmark {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .wm-icon {
+      width: 34px; height: 34px;
+      border: 1.5px solid var(--ink2);
+      display: grid; place-items: center;
+      position: relative;
+    }
+    .wm-icon::after {
+      content: '';
+      position: absolute; bottom: -4px; right: -4px;
+      width: 14px; height: 14px;
+      background: var(--rust);
+    }
+    .wm-icon svg { position: relative; z-index: 1; }
+    .wm-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .left-body { padding-bottom: 24px; }
+
+    .kicker {
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--rust); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .kicker::after { content: ''; flex: 0 0 32px; height: 1px; background: var(--rust); }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 4.5vw, 5rem);
+      font-weight: 300;
+      line-height: 1.0;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--rust);
+    }
+
+    .sub-headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.1rem, 1.6vw, 1.4rem);
+      font-weight: 300; font-style: italic;
+      color: var(--muted); margin-bottom: 36px;
+    }
+
+    .body-text {
+      font-size: 0.85rem; line-height: 1.8;
+      color: var(--muted); max-width: 340px;
+    }
+
+    /* Decorative rule */
+    .rule {
+      display: flex; align-items: center; gap: 16px;
+      margin: 36px 0 28px;
+    }
+    .rule-line { flex: 1; height: 1px; background: var(--border); }
+    .rule-diamond {
+      width: 6px; height: 6px;
+      background: var(--rust);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* Role tags */
+    .role-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .rtag {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      background: rgba(255,255,255,0.5);
+    }
+    .rtag.admin    { border-color: #b57aff44; color: #9b59b6; background: #f9f4ff; }
+    .rtag.employee { border-color: #b85c3844; color: var(--rust); background: #fff8f5; }
+    .rtag.intern   { border-color: #6b8c6e44; color: var(--sage); background: #f4f9f4; }
+
+    .left-foot {
+      font-size: 0.72rem; color: var(--faint);
+    }
+
+    /* ── RIGHT PANEL ── */
+    .right {
+      display: flex; align-items: center; justify-content: center;
+      padding: 56px 64px;
+      background: rgba(255,253,249,0.7);
+    }
+
+    .card {
+      width: 100%; max-width: 380px;
+      animation: rise 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header { margin-bottom: 38px; }
+    .card-label {
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem; font-weight: 600;
+      letter-spacing: -0.01em; line-height: 1.1;
+    }
+
+    /* ── ALERT ── */
+    .alert {
+      display: none;
+      font-size: 0.79rem; line-height: 1.55;
+      padding: 11px 15px;
+      border-left: 3px solid var(--danger);
+      background: #fdf3f2;
+      color: #a93226;
+      margin-bottom: 22px;
+      animation: shake 0.35s ease both;
+    }
+    .alert.show { display: block; }
+    .alert.blocked {
+      border-left-color: #e67e22;
+      background: #fef9f0;
+      color: #ca6f1e;
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)}
+      40%{transform:translateX(5px)}   60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+    }
+
+    /* Attempt tracker */
+    .tracker {
+      display: none; align-items: center; gap: 5px; margin-bottom: 18px;
+    }
+    .tracker.show { display: flex; }
+    .t-pip {
+      width: 32px; height: 3px; background: var(--sand);
+      transition: background 0.3s;
+    }
+    .t-pip.used { background: var(--danger); }
+    .t-note {
+      font-size: 0.7rem; color: var(--muted);
+      margin-left: 8px; letter-spacing: 0.04em;
+    }
+
+    /* ── FIELDS ── */
+    .field { margin-bottom: 26px; }
+
+    label {
+      display: block;
+      font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+    }
+
+    .irow {
+      display: flex; align-items: center;
+      border-bottom: 1.5px solid var(--border);
+      transition: border-color 0.25s;
+      gap: 10px; padding-bottom: 4px;
+    }
+    .irow:focus-within { border-bottom-color: var(--rust); }
+    .irow .ico { color: var(--faint); flex-shrink: 0; transition: color 0.25s; }
+    .irow:focus-within .ico { color: var(--rust); }
+
+    input[type="text"],
+    input[type="password"] {
+      flex: 1; background: transparent; border: none; outline: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.95rem; color: var(--ink);
+      padding: 6px 0;
+      caret-color: var(--rust);
+    }
+    input::placeholder { color: var(--faint); }
+
+    .eye-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--faint); padding: 2px; display: flex;
+      flex-shrink: 0; transition: color 0.2s;
+    }
+    .eye-btn:hover { color: var(--ink); }
+
+    /* ── BUTTON ── */
+    .submit-btn {
+      width: 100%; margin-top: 6px;
+      padding: 14px 20px;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: background 0.25s, transform 0.15s;
+    }
+    .submit-btn::after {
+      content: '';
+      position: absolute; left: -60%; top: 0;
+      width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      transform: skewX(-20deg);
+      transition: left 0.5s;
+    }
+    .submit-btn:hover { background: var(--ink2); }
+    .submit-btn:hover::after { left: 130%; }
+    .submit-btn:active { transform: scale(0.99); }
+
+    .submit-btn.loading { pointer-events: none; color: transparent; }
+    .submit-btn.loading::before {
+      content: '';
+      position: absolute; inset: 0; margin: auto;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(250,246,240,0.25);
+      border-top-color: var(--cream);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .card-foot {
+      margin-top: 28px; padding-top: 22px;
+      border-top: 1px solid var(--border);
+      font-size: 0.74rem; color: var(--faint);
+      text-align: center; line-height: 1.7;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 800px) {
+      .page { grid-template-columns: 1fr; }
+      .left { display: none; }
+      .right { padding: 40px 28px; background: var(--cream); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div class="page">
+
+  <!-- ── LEFT ── -->
+  <div class="left">
+
+    <div class="wordmark">
+      <div class="wm-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2L14 6V10L8 14L2 10V6L8 2Z" stroke="#2c2620" stroke-width="1.2"/>
+          <circle cx="8" cy="8" r="2" fill="#b85c38"/>
+        </svg>
+      </div>
+      <span class="wm-text">Portal</span>
+    </div>
+
+    <div class="left-body">
+      <h1>Less Perfection<br/><em>More Authenticity.</em></h1>
+      <p class="sub-headline">Your workspace, secured.</p>
+
+      <p class="body-text">
+        Access is verified against our employee database, if you're meant to be here, you'll know.
+      </p>
+
+      <div class="rule">
+        <div class="rule-line"></div>
+        <div class="rule-diamond"></div>
+        <div class="rule-line"></div>
+      </div>
+
+     
+    </div>
+  </div>
+
+  <!-- ── RIGHT ── -->
+  <div class="right">
+    <div class="card">
+
+      <div class="card-header">
+        <p class="card-label">Sign in to continue</p>
+        <h2 class="card-title">Good to see<br/>you again.</h2>
+      </div>
+
+      <!-- Attempt tracker -->
+      <div class="tracker" id="tracker">
+        <div class="t-pip" id="p1"></div>
+        <div class="t-pip" id="p2"></div>
+        <div class="t-pip" id="p3"></div>
+        <span class="t-note" id="tNote"></span>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert" id="alertBox"></div>
+
+      <!-- Username -->
+      <div class="field">
+        <label for="username">Username or Email</label>
+        <div class="irow">
+          <svg class="ico" width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5.5" r="3" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M2 14c0-2.5 2.7-4.5 6-4.5s6 2 6 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <input type="text" id="username" placeholder="firstname.lastname" autocomplete="username"/>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="irow">
+          <svg class="ico" width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <rect x="3" y="7" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <circle cx="8" cy="11" r="1" fill="currentColor"/>
+          </svg>
+          <input type="password" id="password" placeholder="••••••••••" autocomplete="current-password"/>
+          <button class="eye-btn" id="eyeBtn" type="button" aria-label="Show password">
+            <svg id="eyeIco" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="loginBtn" type="button">Sign In</button>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const usernameEl = document.getElementById('username');
+  const passwordEl = document.getElementById('password');
+  const loginBtn   = document.getElementById('loginBtn');
+  const alertBox   = document.getElementById('alertBox');
+  const eyeBtn     = document.getElementById('eyeBtn');
+  const eyeIco     = document.getElementById('eyeIco');
+  const tracker    = document.getElementById('tracker');
+  const tNote      = document.getElementById('tNote');
+  const pips       = [document.getElementById('p1'), document.getElementById('p2'), document.getElementById('p3')];
+
+  // Toggle password visibility
+  eyeBtn.addEventListener('click', () => {
+    const show = passwordEl.type === 'password';
+    passwordEl.type = show ? 'text' : 'password';
+    eyeIco.innerHTML = show
+      ? `<line x1="1" y1="1" x2="23" y2="23"/><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  });
+
+  // Clear alert on typing
+  [usernameEl, passwordEl].forEach(el => {
+    el.addEventListener('input', () => alertBox.classList.remove('show'));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+
+  loginBtn.addEventListener('click', doLogin);
+
+  async function doLogin() {
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!username || !password) {
+      return showAlert('Please fill in both fields.', false);
+    }
+
+    loginBtn.classList.add('loading');
+    alertBox.classList.remove('show');
+
+    try {
+      const res  = await fetch('/api/auth/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      loginBtn.classList.remove('loading');
+
+      if (data.success) {
+        loginBtn.textContent    = '✓  Welcome back';
+        loginBtn.style.background = '#4a6741';
+        loginBtn.style.letterSpacing = '0.1em';
+        setTimeout(() => window.location.href = data.redirect, 700);
+        return;
+      }
+
+      // Show attempt pips
+      if (typeof data.attemptsLeft === 'number') {
+        updatePips(3 - data.attemptsLeft);
+      }
+
+      showAlert(data.message, !!data.blocked);
+      passwordEl.value = '';
+      passwordEl.focus();
+
+      if (data.blocked) {
+        loginBtn.disabled = true;
+        loginBtn.style.background   = '#7b2c2c';
+        loginBtn.style.color        = '#f5c6c6';
+        loginBtn.style.letterSpacing = '0.1em';
+        loginBtn.textContent = '⛔  Access Blocked';
+      }
+
+    } catch {
+      loginBtn.classList.remove('loading');
+      showAlert('Could not connect to server. Is it running?', false);
+    }
+  }
+
+  function showAlert(msg, isBlocked) {
+    alertBox.className = `alert${isBlocked ? ' blocked' : ''} show`;
+    alertBox.textContent = msg;
+  }
+
+  function updatePips(used) {
+    tracker.classList.add('show');
+    pips.forEach((p, i) => p.classList.toggle('used', i < used));
+    tNote.textContent = used >= 3 ? 'IP blocked' : `${3 - used} attempt${3 - used === 1 ? '' : 's'} left`;
+  }
+</script>
+</body>
+</html>
