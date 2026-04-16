@@ -4,7 +4,7 @@ const bcrypt     = require('bcryptjs');
 const User       = require('../models/User');
 const LoginEvent = require('../models/LoginEvent');
 const { parseDevice, trackAttempt, resetAttempts } = require('../middleware/authMiddleware');
-
+const { checkIP } = require('../middleware/ipMiddleware');
 // Register (only for testing — so you can create a user to log in with)
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
@@ -18,7 +18,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', checkIP, async (req, res) => {
   const { email, password } = req.body;
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
   const { deviceType, browser, os } = parseDevice(req.headers['user-agent']);
