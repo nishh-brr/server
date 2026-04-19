@@ -1,4 +1,5 @@
-const ThreatEvent = require('../models/ThreatEvent');
+const ThreatEvent  = require('../models/ThreatEvent');
+const DangerousIP  = require('../models/DangerousIP');
 const { parseDevice } = require('./authMiddleware');
 
 const allowedIPs = process.env.ALLOWED_IPS
@@ -10,18 +11,28 @@ async function checkIP(req, res, next) {
   const { deviceType, browser, os } = parseDevice(req.headers['user-agent']);
   const email = req.body?.email || 'unknown';
 
-  if (!allowedIPs.includes(ip)) {
-    await ThreatEvent.create({
-      ip, reason: 'ip_not_allowed',
-      email, deviceType, browser, os,
-      blocked: true
-    });
+  // Check dangerous IP list from DB
+  const isDangerous = await DangerousIP.findOne({ ip });
 
+  if (isDangerous) {
+    await ThreatEvent.create({
+      ip,
+      reason: `DANGEROUS IP - ${isDangerous.reason}`,
+      email, deviceType, browser, os,
+      blocked: true,
+      threatLevel: 'high'
+    });
     return res.status(403).json({
-      message: 'Access denied — your IP is not authorized',
+      message: 'Access denied - your IP has been flagged as dangerous',
+      reason: isDangerous.reason,
       ip
     });
   }
+
+  // Tag source and pass to next middleware
+  req.clientIP    = ip;
+  req.ipSource    = allowedIPs.includes(ip) ? 'on-prem' : 'cloud';
+  req.deviceInfo  = { deviceType, browser, os };
 
   next();
 }
