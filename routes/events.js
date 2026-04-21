@@ -56,17 +56,25 @@ router.get('/threat-summary', async (req, res) => {
 });
 
 // Hybrid summary
+// Hybrid summary
 router.get('/hybrid-summary', async (req, res) => {
   try {
+    const db = require('../config/firebase');
+
     const onPremTotal  = await OnPremEvent.countDocuments();
     const onPremFailed = await OnPremEvent.countDocuments({ success: false });
-    const cloudTotal   = await CloudEvent.countDocuments();
-    const cloudFailed  = await CloudEvent.countDocuments({ success: false });
+
+    // Get cloud count from Firebase
+    const cloudSnapshot       = await db.collection('cloudevents').get();
+    const cloudFailedSnapshot = await db.collection('cloudevents')
+      .where('success', '==', false).get();
+
     res.json({
-      onPrem: { total: onPremTotal,  failed: onPremFailed },
-      cloud:  { total: cloudTotal,   failed: cloudFailed  }
+      onPrem: { total: onPremTotal,            failed: onPremFailed },
+      cloud:  { total: cloudSnapshot.size,     failed: cloudFailedSnapshot.size }
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -74,46 +82,73 @@ router.get('/hybrid-summary', async (req, res) => {
 // Hybrid events
 router.get('/hybrid-events', async (req, res) => {
   try {
+    const db = require('../config/firebase');
+
     const onPremEvents = await OnPremEvent.find().sort({ timestamp: -1 }).limit(50);
-    const cloudEvents  = await CloudEvent.find().sort({ timestamp: -1 }).limit(50);
+
+    // Get cloud events from Firebase
+    const cloudSnapshot = await db.collection('cloudevents')
+      .orderBy('timestamp', 'desc')
+      .limit(50)
+      .get();
+
+    const cloudEvents = cloudSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
     res.json({ onPrem: onPremEvents, cloud: cloudEvents });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // Full dashboard summary (single endpoint for frontend)
-router.get('/dashboard', async (req, res) => {
+// Hybrid summary
+router.get('/hybrid-summary', async (req, res) => {
   try {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const db = require('../config/firebase');
 
-    const [
-      totalLogins, failedLogins, todayLogins,
-      totalThreats, blockedThreats, highThreats,
-      onPremTotal, cloudTotal,
-      recentEvents, recentThreats
-    ] = await Promise.all([
-      OnPremEvent.countDocuments() + CloudEvent.countDocuments(),
-      OnPremEvent.countDocuments({ success: false }),
-      OnPremEvent.countDocuments({ timestamp: { $gte: today } }),
-      ThreatEvent.countDocuments(),
-      ThreatEvent.countDocuments({ blocked: true }),
-      ThreatEvent.countDocuments({ threatLevel: 'high' }),
-      OnPremEvent.countDocuments(),
-      CloudEvent.countDocuments(),
-      [...await OnPremEvent.find().sort({ timestamp: -1 }).limit(5),
-       ...await CloudEvent.find().sort({ timestamp: -1 }).limit(5)],
-      ThreatEvent.find().sort({ timestamp: -1 }).limit(5)
-    ]);
+    const onPremTotal  = await OnPremEvent.countDocuments();
+    const onPremFailed = await OnPremEvent.countDocuments({ success: false });
+
+    // Get cloud count from Firebase
+    const cloudSnapshot       = await db.collection('cloudevents').get();
+    const cloudFailedSnapshot = await db.collection('cloudevents')
+      .where('success', '==', false).get();
 
     res.json({
-      logins:  { total: totalLogins, failed: failedLogins, today: todayLogins },
-      threats: { total: totalThreats, blocked: blockedThreats, high: highThreats },
-      hybrid:  { onPrem: onPremTotal, cloud: cloudTotal },
-      recentEvents,
-      recentThreats
+      onPrem: { total: onPremTotal,            failed: onPremFailed },
+      cloud:  { total: cloudSnapshot.size,     failed: cloudFailedSnapshot.size }
     });
   } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Hybrid events
+router.get('/hybrid-events', async (req, res) => {
+  try {
+    const db = require('../config/firebase');
+
+    const onPremEvents = await OnPremEvent.find().sort({ timestamp: -1 }).limit(50);
+
+    // Get cloud events from Firebase
+    const cloudSnapshot = await db.collection('cloudevents')
+      .orderBy('timestamp', 'desc')
+      .limit(50)
+      .get();
+
+    const cloudEvents = cloudSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json({ onPrem: onPremEvents, cloud: cloudEvents });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
