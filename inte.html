@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zero Trust Demo</title>
+</head>
+<body>
+
+<h2>Login</h2>
+<input type="text" id="username" placeholder="Username"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+
+<h2>Secure Data</h2>
+<button onclick="getData()">Get Secure Data</button>
+
+<p id="output"></p>
+
+<script>
+let token = "";
+
+function login() {
+    fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        token = data.token;
+        document.getElementById("output").innerText = "Logged in!";
+    });
+}
+
+function getData() {
+    fetch('http://127.0.0.1:5000/secure-data', {
+        method: 'GET',
+        headers: {
+            'Authorization': token
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("output").innerText = data.data;
+    });
+}
+</script>
+
+</body>
+</html>
