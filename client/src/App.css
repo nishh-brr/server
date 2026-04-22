@@ -1,0 +1,32 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #0b1e2d;
+  color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.sidebar-container {
+  width: 260px;
+  background: #081a28;
+  min-height: 100vh;
+  border-right: 1px solid rgba(0, 230, 230, 0.12);
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: white;
+}
+
+.sidebar a.active {
+  background: rgba(0, 230, 230, 0.15);
+  border-radius: 8px;
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zero Trust Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0f0f0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .card h1 {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      color: #aaa;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 18px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input:focus {
+      border-color: #555;
+    }
+
+    button {
+      width: 100%;
+      padding: 11px;
+      background: #ffffff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .attempts {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #aaa;
+      font-size: 13px;
+      display: none;
+    }
+
+    .attempts.visible { display: block; }
+
+    .attempts span {
+      color: #ff4444;
+      font-weight: 600;
+    }
+
+    .message {
+      margin-top: 14px;
+      font-size: 13px;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    .message.error { color: #ff4444; }
+    .message.success { color: #44ff88; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Zero Trust Login</h1>
+    <p>Secure access portal</p>
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="you@example.com" />
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="••••••••" />
+
+    <button onclick="handleLogin()">Sign In (On-Prem)</button>
+<button onclick="handleCloudLogin()" style="margin-top:10px; background:#1a1a2e; color:#00e6e6; border:1px solid #00e6e6;">Sign In (Cloud)</button>
+
+    <div class="attempts" id="attemptsBox">
+      Failed attempts: <span id="attemptCount">0</span>
+    </div>
+
+    <div class="message" id="message"></div>
+  </div>
+<div class="link" style="margin-top:16px; text-align:center; font-size:13px; color:#666;">
+  No account? <a href="/register.html" style="color:#aaa; text-decoration:none;">Register here</a>
+</div>
+  <script>
+    let attempts = 0;
+
+    async function handleLogin() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const btn = document.getElementById('loginBtn');
+      const msg = document.getElementById('message');
+      const attemptsBox = document.getElementById('attemptsBox');
+      const attemptCount = document.getElementById('attemptCount');
+
+      if (!email || !password) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          attempts = 0;
+          attemptCount.textContent = 0;
+          attemptsBox.classList.remove('visible');
+          showMessage('Login successful!', 'success');
+          // Redirect to dashboard after 1 second
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+        } else {
+          attempts++;
+          attemptCount.textContent = attempts;
+          attemptsBox.classList.add('visible');
+          showMessage(data.message || 'Login failed', 'error');
+        }
+
+      } catch (err) {
+        showMessage('Cannot connect to server', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    }
+
+    async function handleCloudLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const msg = document.getElementById('message');
+
+  if (!email || !password) {
+    showMessage('Please fill in all fields', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/cloud-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showMessage('Cloud login successful! Source: ' + data.source, 'success');
+    } else {
+      attempts++;
+      document.getElementById('attemptCount').textContent = attempts;
+      document.getElementById('attemptsBox').classList.add('visible');
+      showMessage(data.message || 'Login failed', 'error');
+    }
+  } catch (err) {
+    showMessage('Cannot connect to server', 'error');
+  }
+}
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = 'message ' + type;
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+  </script>
+</body>
+</html>

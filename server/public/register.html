@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #0f0f0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .card h1 { color: #ffffff; font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+    .card p { color: #666; font-size: 14px; margin-bottom: 28px; }
+    label { display: block; color: #aaa; font-size: 13px; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 18px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus { border-color: #555; }
+    button {
+      width: 100%;
+      padding: 11px;
+      background: #ffffff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .message { margin-top: 14px; font-size: 13px; text-align: center; min-height: 20px; }
+    .message.error { color: #ff4444; }
+    .message.success { color: #44ff88; }
+    .link { margin-top: 16px; text-align: center; font-size: 13px; color: #666; }
+    .link a { color: #aaa; text-decoration: none; }
+    .link a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Create Account</h1>
+    <p>Register to access the portal</p>
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="you@example.com" />
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="••••••••" />
+
+    <button onclick="handleRegister()">Register</button>
+
+    <div class="message" id="message"></div>
+
+    <div class="link">
+      Already have an account? <a href="/">Sign in</a>
+    </div>
+  </div>
+
+  <script>
+    async function handleRegister() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const btn = document.querySelector('button');
+
+      if (!email || !password) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showMessage('Account created! Redirecting to login...', 'success');
+          setTimeout(() => { window.location.href = '/'; }, 1500);
+        } else {
+          showMessage(data.message || 'Registration failed', 'error');
+        }
+      } catch (err) {
+        showMessage('Cannot connect to server', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Register';
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleRegister();
+    });
+  </script>
+</body>
+</html>
