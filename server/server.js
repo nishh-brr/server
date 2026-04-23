@@ -8,17 +8,14 @@ dotenv.config();
 const app = express();
 
 // CORS - allow React dev server
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+jsapp.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true,
 }));
-
-app.use(express.json());
-
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} — IP: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
-  next();
-});
 
 app.use(express.static('public'));
 
