@@ -7,29 +7,43 @@ dotenv.config();
 
 const app = express();
 
-// CORS - allow React dev server
+// ✅ Middleware
+app.use(express.json()); // VERY IMPORTANT (for req.body)
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ CORS (allow React frontend)
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
-  credentials: true,
+  origin: "http://localhost:3000",
+  credentials: true
 }));
 
-// Routes
-app.use('/api/auth',   require('./routes/auth'));
+// ✅ Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/events', require('./routes/events'));
 
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
+// ✅ Health check route
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Server is running',
+    time: new Date()
+  });
+});
 
-// Connect to MongoDB then start server
+// ❌ Optional root route (to avoid "Cannot GET /")
+app.get('/', (req, res) => {
+  res.send("API is running...");
+});
+
+// ✅ MongoDB connection + server start
+const PORT = process.env.PORT || 5000;
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
-    app.listen(process.env.PORT || 5000, () => {
-      console.log(`🚀 Server running on port ${process.env.PORT || 5000}`);
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   })
   .catch(err => {
