@@ -13,7 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // ✅ CORS (allow React frontend)
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: [
+    "http://localhost:3000",
+    "https://zerotrustarchitecturee.netlify.app"
+  ],
   credentials: true
 }));
 
