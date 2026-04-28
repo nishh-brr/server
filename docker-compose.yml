@@ -1,0 +1,46 @@
+services:
+  # ─── React Frontend ────────────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+      # Browser calls backend via localhost:5000 (not the container name)
+      - REACT_APP_API_URL=http://localhost:5000/api
+    volumes:
+      - ./client:/app
+      - /app/node_modules        # Prevent local node_modules from overriding container's
+    depends_on:
+      - server
+    networks:
+      - zt-network
+
+  # ─── Express Backend ───────────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env            # Loads MONGO_URI, JWT_SECRET, etc.
+    environment:
+      - PORT=5000
+      - ALLOWED_ORIGINS=http://localhost:3000
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - zt-network
+
+  # ─── No local MongoDB needed ───────────────────────────────────────
+  # Your project already uses MongoDB Atlas (cloud).
+  # The MONGO_URI in server/.env connects directly to Atlas.
+
+networks:
+  zt-network:
+    driver: bridge

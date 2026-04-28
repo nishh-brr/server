@@ -1,62 +1,89 @@
-# Zero Trust Architecture — Hybrid Cloud Console
+# Zero Trust — Docker Setup & Fix Guide
 
-## Project Structure
-```
-zero_trust_fixed/
-├── server/          ← Express + MongoDB backend (port 5000)
-└── client/          ← React frontend (port 3000)
-```
+## 🐛 Issues Fixed
 
-## Setup & Run
+### 1. `manifest.json` Error (Hosting)
+**Problem:** `client/public/index.html` references `manifest.json` but the file didn't exist.
+This causes a 404 error in the browser and breaks PWA hosting on Netlify/Vercel.
 
-### 1. Backend
-```bash
-cd server
-npm install
-node server.js
-```
-Server runs at: http://localhost:5000
-
-### 2. Frontend
-```bash
-cd client
-npm install
-npm start
-```
-Frontend runs at: http://localhost:3000
+**Fix:** Copy `manifest.json` → `client/public/manifest.json`
 
 ---
 
-## What's Connected
+### 2. Client Dockerfile — Wrong CMD
+**Problem:** `CMD ["npm", "run", "dev"]` — React CRA has no `dev` script.
+This causes the container to crash immediately on startup.
 
-| Frontend Page     | Backend Endpoint                    | Database       |
-|-------------------|-------------------------------------|----------------|
-| Login             | POST /api/auth/login                | MongoDB (User) |
-| Register          | POST /api/auth/register             | MongoDB (User) |
-| Dashboard         | GET  /api/events/dashboard-summary  | MongoDB        |
-| Hybrid Cloud      | GET  /api/events/hybrid-summary     | MongoDB+Firebase|
-| Hybrid Cloud      | GET  /api/events/hybrid-events      | MongoDB+Firebase|
-| Audit Logs        | GET  /api/events/login-events       | MongoDB        |
-| Audit Logs        | GET  /api/events/login-summary      | MongoDB        |
-| Threat Monitor    | GET  /api/events/threat-events      | MongoDB        |
-| Threat Monitor    | GET  /api/events/threat-summary     | MongoDB        |
+**Fix:** `CMD ["npm", "start"]` (the correct CRA command)
 
-## Auth Flow
-1. User registers → password hashed with bcrypt → stored in MongoDB
-2. User logs in → JWT token returned → stored in localStorage as `zt_token`
-3. All protected pages check for `zt_token` → redirect to /login if missing
-4. Every API call sends `Authorization: Bearer <token>` header
-5. Logout clears localStorage and redirects to /login
+---
 
-## Hybrid Cloud Logic
-- On-Prem IPs (from ALLOWED_IPS in .env) → saved to MongoDB `onpremevents`
-- Cloud IPs (all others) → saved to Firebase Firestore `cloudevents`
-- If Firebase is unavailable → falls back to MongoDB `cloudevents` collection
+### 3. No docker-compose.yml
+**Fix:** `docker-compose.yml` added at the root level.
+Note: No local MongoDB container needed — your project uses MongoDB Atlas.
 
-## MongoDB Collections
-- `users` — registered accounts
-- `loginevents` — every login attempt (success + fail)
-- `onpremevents` — on-prem login events (hybrid)
-- `cloudevents` — cloud login events (fallback from Firebase)
-- `threatevents` — blocked/flagged IPs
-- `dangerousips` — blocklist
+---
+
+### 4. No .dockerignore files
+**Problem:** Without `.dockerignore`, Docker copies `node_modules` into the build
+context, making images huge and slow.
+
+**Fix:** `.dockerignore` files added for both `client/` and `server/`.
+
+---
+
+## 📁 Where to Place Each File
+
+```
+zero_trust_fixed/
+├── docker-compose.yml          ← NEW (root level)
+├── client/
+│   ├── Dockerfile              ← REPLACE with fixed version
+│   ├── .dockerignore           ← NEW
+│   └── public/
+│       └── manifest.json       ← NEW (fixes hosting error)
+└── server/
+    ├── Dockerfile              ← unchanged (already fine)
+    └── .dockerignore           ← NEW
+```
+
+---
+
+## ▶️ How to Run
+
+```bash
+cd zero_trust_fixed
+
+# Build & start both containers
+docker compose up --build
+
+# Run in background
+docker compose up --build -d
+
+# Stop containers
+docker compose down
+```
+
+## 🌐 URLs
+
+| Service       | URL                        |
+|---------------|----------------------------|
+| Frontend      | http://localhost:3000      |
+| Backend API   | http://localhost:5000/api  |
+| Health Check  | http://localhost:5000/api/health |
+
+## 🛠️ Useful Commands
+
+```bash
+# View live logs
+docker compose logs -f
+
+# View logs for one service
+docker compose logs -f server
+
+# Restart one service
+docker compose restart client
+
+# Shell into a container
+docker compose exec server sh
+```

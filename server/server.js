@@ -21,6 +21,12 @@ app.use(cors({
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/events', require('./routes/events'));
 
+// Add this after your existing app.use() lines
+app.use((req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
+
 // ✅ Health check route
 app.get('/api/health', (req, res) => {
   res.json({
