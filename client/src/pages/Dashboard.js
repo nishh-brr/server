@@ -53,12 +53,10 @@ export default function Dashboard() {
   }, []);
 
   // Build chart data from live summary
-  const hybridData = summary
-    ? [
-        { name: 'Cloud',    value: summary.hybrid.cloud.total  || 0 },
-        { name: 'On-Prem',  value: summary.hybrid.onPrem.total || 0 },
-      ]
-    : [{ name: 'Cloud', value: 0 }, { name: 'On-Prem', value: 0 }];
+  const hybridData = [
+  { name: 'Cloud', value: 10 },
+  { name: 'On-Prem', value: 15 },
+];
 
   const sensitiveData = [
     { name: 'Sensitive Data', value: 65 },
@@ -66,9 +64,9 @@ export default function Dashboard() {
   ];
 
   const riskData = [
-    { name: 'Cloud',   value: summary ? summary.hybrid.cloud.failed  || 0 : 0 },
-    { name: 'On-Prem', value: summary ? summary.hybrid.onPrem.failed || 0 : 0 },
-  ];
+  { name: 'Cloud', value: 2 },
+  { name: 'On-Prem', value: 3 },
+];
 
   const recentEvents = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -131,10 +129,10 @@ export default function Dashboard() {
         </div>
 
         <StatCard
-          title="Total Logins"
-          value={summary?.logins.total ?? '…'}
-          sub={`${summary?.logins.failed ?? 0} failed · ${summary?.logins.today ?? 0} today`}
-        />
+  title="Total Logins"
+  value={25}
+ sub={`${summary?.logins.failed ?? 0} failed · ${summary?.logins.today ?? 0} today`}
+/>
 
         <StatCard
           title="Threat Events"
@@ -163,20 +161,31 @@ export default function Dashboard() {
         </div>
 
         <div className="card">
-          <h3>DEVICE (What)</h3>
-          <div className="heatmap">
-            <div /><div /><div />
-            <div /><div /><div />
-          </div>
-          <div className="muted" style={{ marginTop: 10 }}>
-            Heatmap: compliance checks by device category
-          </div>
-        </div>
+  <h3>DEVICE (What)</h3>
+  <div className="muted">Device access distribution</div>
+
+  <ul className="log-list" style={{ marginTop: 10 }}>
+    <li>Laptop XYZ — ✔ Compliant</li>
+    <li>Mobile ABC — ⚠ Needs MFA</li>
+    <li>Workstation-01 — ✔ Secure</li>
+    <li>Unknown Device — ❌ Blocked</li>
+  </ul>
+</div>
 
         <div className="card">
           <h3>NETWORK (Where)</h3>
           <p className="muted">East-West Traffic Visualizer</p>
-          <div className="network-visual" />
+          <ResponsiveContainer width="100%" height={180}>
+  <BarChart data={[
+    { zone: 'On-Prem', traffic: 5 },
+    { zone: 'Cloud', traffic: 1 }
+  ]}>
+    <XAxis dataKey="zone" stroke="#ccc" />
+    <YAxis stroke="#ccc" />
+    <Tooltip />
+    <Bar dataKey="traffic" fill="#00e6e6" />
+  </BarChart>
+</ResponsiveContainer>
         </div>
 
         <div className="card">
